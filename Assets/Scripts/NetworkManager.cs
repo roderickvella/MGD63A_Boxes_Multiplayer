@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using Newtonsoft.Json;
 
 public class NetworkManager : MonoBehaviour, IPunObservable
 {
@@ -30,6 +31,35 @@ public class NetworkManager : MonoBehaviour, IPunObservable
     public void ChangeSizesRPC(string jsonSizes)
     {
         print(jsonSizes);
+        List<PlayerInfo> playersInfo = JsonConvert.DeserializeObject<List<PlayerInfo>>(jsonSizes);
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach(GameObject player in players)
+        {
+            player.GetComponent<PlayerController>().ChangeSizeFromMaster(playersInfo);
+        }
+    }
+
+    public void DestroyPlayer(int destroyPlayerActorNumber)
+    {
+        //send message to all connected clients with id (actorNumber) to destroy
+        photonView.RPC("DestroyPlayerRPC", RpcTarget.All, destroyPlayerActorNumber);
+    }
+
+    [PunRPC]
+    public void DestroyPlayerRPC(int destroyPlayerActorNumber)
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach(GameObject player in players)
+        {
+            if(player.GetComponent<PhotonView>().Owner.ActorNumber == destroyPlayerActorNumber)
+            {
+                if (player.GetComponent<PhotonView>().AmOwner)
+                {
+                    PhotonNetwork.Destroy(player);
+                }
+               
+            }
+        }
     }
 
     // Update is called once per frame

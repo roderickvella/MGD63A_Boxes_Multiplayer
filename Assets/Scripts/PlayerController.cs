@@ -108,4 +108,46 @@ public class PlayerController : MonoBehaviour, IPunInstantiateMagicCallback, IPu
             //print("Received PlayerPos Data:" + otherPlayerPos);
         }
     }
+
+    public void ChangeSizeFromMaster(List<PlayerInfo> playerInfos)
+    {
+        foreach(PlayerInfo playerInfo in playerInfos)
+        {
+            if(photonView.Owner.ActorNumber == playerInfo.actorNumber)
+            {
+                transform.localScale = new Vector2(playerInfo.size.x, playerInfo.size.y);
+            }
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            if (photonView.IsMine)
+            {
+                //get scale of box this player collided with
+                float scaleOther = collision.transform.localScale.x;
+
+                //gets scale of this player
+                float scaleMine = transform.localScale.x;
+
+                //get id of the smallest player
+                int destroyPlayerId;
+                if(scaleMine > scaleOther)
+                {
+                    destroyPlayerId = collision.gameObject.
+                        GetComponent<PlayerController>().photonView.Owner.ActorNumber;
+                }
+                else
+                {
+                    destroyPlayerId = this.photonView.Owner.ActorNumber;
+                }
+
+                //inform everyone to destroy (eat) smallest player
+                GameObject.Find("Scripts").GetComponent<NetworkManager>().DestroyPlayer(destroyPlayerId);
+
+            }
+        }
+    }
 }
