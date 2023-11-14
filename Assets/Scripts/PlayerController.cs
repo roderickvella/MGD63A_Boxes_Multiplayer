@@ -99,13 +99,13 @@ public class PlayerController : MonoBehaviour, IPunInstantiateMagicCallback, IPu
         if (stream.IsWriting)
         {
             stream.SendNext(transform.position);         
-            print("Sending PlayerPos Data:"+transform.position);
+            //print("Sending PlayerPos Data:"+transform.position);
         }
         else
         {
             //we are receiving data from other player
             otherPlayerPos = (Vector3) stream.ReceiveNext();          
-            print("Received PlayerPos Data:" + otherPlayerPos);
+            //print("Received PlayerPos Data:" + otherPlayerPos);
         }
     }
 }
